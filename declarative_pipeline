@@ -1,0 +1,56 @@
+
+
+
+
+
+
+
+pipeline 
+{
+	agent any
+	stages
+	{
+		stage('continuous download')
+		{
+			steps
+			{
+			     git 'https://github.com/ArkLearnersEdge/maven.git'
+		    }
+		}
+		stage('continuous build')
+		{
+			steps
+			{
+				sh 'mvn package'
+			}
+		}
+		stage('continuous deploy')
+		{
+			steps
+			{
+				 sh 'scp /home/ubuntu/.jenkins/workspace/descriptive-pipeline/webapp/target/webapp.war ubuntu@172.31.95.221:/var/lib/tomcat8/webapps/testapp'
+				 
+			}
+        }
+        stage('continuous testing')
+        {
+            steps
+            {
+			     https://github.com/ArkLearnersEdge/FunctionalTesting.git 
+				  sh 'java -jar /home/ubuntu/.jenkins/workspace/descriptive-pipeline/testing.jar'
+			}
+		}
+		post
+		{
+			success
+			{
+				sh 'scp /home/ubuntu/.jenkins/workspace/descriptive-pipeline/webapp/target/webapp.war ubuntu@/172.31.87.248:/var/lib/tomcat8/webapps/prodapp'
+			}
+			failure
+			{
+				mail bcc: '', body: 'the process has been failed please verify', cc: 'lalitha@gmail.com', from: '', replyTo: '', subject: 'ci-cd process failed', to: 'unis@gmail.com'
+			}
+		}
+	}
+}
+
